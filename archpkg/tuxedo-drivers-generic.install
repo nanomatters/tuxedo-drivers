@@ -1,0 +1,119 @@
+#!/bin/sh
+# DKMS install script for tuxedo-drivers
+
+_pkgname=tuxedo-drivers
+_pkgver=4.20.1
+
+post_install() {
+  echo "===> Adding ${_pkgname} module to DKMS"
+  dkms add -m ${_pkgname} -v ${_pkgver} || true
+  
+  echo "===> Building ${_pkgname} modules for all installed kernels"
+  dkms build -m ${_pkgname} -v ${_pkgver} || true
+  
+  echo "===> Installing ${_pkgname} modules for all installed kernels"
+  dkms install -m ${_pkgname} -v ${_pkgver} || true
+  
+  # Update udev hwdb database
+  if [ -x /usr/bin/udevadm ]; then
+    echo "===> Updating udev hardware database"
+    udevadm hwdb --update || true
+    udevadm control --reload || true
+  fi
+  
+  # Restart UPower if running (it doesn't handle appearing LED devices well)
+  if systemctl is-active --quiet upower; then
+    echo "===> Restarting UPower service"
+    systemctl restart upower || true
+  fi
+  
+  cat << EOF
+
+==> TUXEDO Drivers have been installed.
+==> The modules will be automatically rebuilt when kernel updates are installed.
+==> You may need to reboot for all changes to take effect.
+
+EOF
+}
+
+post_upgrade() {
+  echo "===> Removing old ${_pkgname} module from DKMS"
+  # Get the old version from DKMS
+  local _old_versions=$(dkms status -m ${_pkgname} | awk -F', ' '{print $2}' | sort -V)
+  
+  # Remove old versions except the current one
+  for _old_ver in ${_old_versions}; do
+    if [ "${_old_ver}" != "${_pkgver}" ]; then
+      echo "===> Removing ${_pkgname}/${_old_ver}"
+      dkms remove -m ${_pkgname} -v ${_old_ver} --all || true
+    fi
+  done
+  
+  echo "===> Upgrading ${_pkgname} module in DKMS"
+  dkms add -m ${_pkgname} -v ${_pkgver} || true
+  dkms build -m ${_pkgname} -v ${_pkgver} || true
+  dkms install -m ${_pkgname} -v ${_pkgver} || true
+  
+  # Update udev hwdb database
+  if [ -x /usr/bin/udevadm ]; then
+    echo "===> Updating udev hardware database"
+    udevadm hwdb --update || true
+    udevadm control --reload || true
+  fi
+  
+  # Restart UPower if running
+  if systemctl is-active --quiet upower; then
+    echo "===> Restarting UPower service"
+    systemctl restart upower || true
+  fi
+  
+  cat << EOF
+
+==> TUXEDO Drivers have been upgraded.
+==> You may need to reboot for all changes to take effect.
+
+EOF
+}
+
+pre_remove() {
+  echo "===> Unloading ${_pkgname} modules if loaded"
+  
+  # List of all modules from dkms.conf in reverse order for safe unloading
+  local _modules="gxtp7380 stk8321 tuxedo_tuxi_fan_control tuxi_acpi \
+                  tuxedo_nb05_fan_control tuxedo_nb02_nvidia_power_ctrl \
+                  tuxedo_nb05_kbd_backlight tuxedo_nb04_kbd_backlight \
+                  tuxedo_nb04_power_profiles tuxedo_nb04_sensors \
+                  tuxedo_nb04_wmi_bs tuxedo_nb04_wmi_ab tuxedo_nb04_keyboard \
+                  tuxedo_nb05_sensors tuxedo_nb05_ec tuxedo_nb05_power_profiles \
+                  tuxedo_nb05_keyboard tuxedo_compatibility_check tuxedo_io \
+                  ite_829x ite_8297 ite_8291_lb ite_8291 uniwill_wmi \
+                  tuxedo_keyboard clevo_wmi clevo_acpi"
+  
+  for _module in ${_modules}; do
+    if lsmod | grep -q "^${_module}"; then
+      echo "===> Unloading module: ${_module}"
+      modprobe -r ${_module} 2>/dev/null || true
+    fi
+  done
+  
+  echo "===> Removing ${_pkgname} module from DKMS"
+  dkms remove -m ${_pkgname} -v ${_pkgver} --all || true
+  
+  # Restart UPower if running
+  if systemctl is-active --quiet upower; then
+    echo "===> Restarting UPower service"
+    systemctl restart upower || true
+  fi
+}
+
+post_remove() {
+  # Update udev hwdb database
+  if [ -x /usr/bin/udevadm ]; then
+    echo "===> Updating udev hardware database"
+    udevadm hwdb --update || true
+    udevadm control --reload || true
+  fi
+  
+  echo "===> ${_pkgname} has been removed."
+  echo "===> You may need to reboot to complete the removal."
+}

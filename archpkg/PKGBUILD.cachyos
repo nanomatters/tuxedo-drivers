@@ -1,0 +1,121 @@
+# Maintainer: TUXEDO Computers GmbH <tux@tuxedocomputers.com>
+
+pkgname=tuxedo-drivers-cachyos
+pkgver=4.20.1
+pkgrel=1
+pkgdesc='Kernel modules for TUXEDO devices (DKMS) - CachyOS package (LLVM/clang build)'
+arch=('any')
+url='https://github.com/tuxedocomputers/tuxedo-drivers'
+license=('GPL-2.0-or-later')
+depends=('dkms' 'linux-headers')
+makedepends=('clang')
+optdepends=('udev-hid-bpf: Fixes for Sirius 16 Gen1/2 keyboard')
+provides=('tuxedo-drivers'
+          'tuxedo-drivers-generic'
+          'tuxedo-cc-wmi'
+          'tuxedo-keyboard'
+          'tuxedo-keyboard-dkms'
+          'tuxedo-keyboard-ite'
+          'tuxedo-touchpad-fix'
+          'tuxedo-wmi-dkms'
+          'tuxedo-xp-xc-airplane-mode-fix'
+          'tuxedo-xp-xc-touchpad-key-fix')
+conflicts=('tuxedo-drivers'
+           'tuxedo-drivers-generic'
+           'tuxedo-drivers-dkms'
+           'tuxedo-cc-wmi'
+           'tuxedo-keyboard'
+           'tuxedo-keyboard-dkms'
+           'tuxedo-keyboard-ite'
+           'tuxedo-touchpad-fix'
+           'tuxedo-wmi-dkms'
+           'tuxedo-xp-xc-airplane-mode-fix'
+           'tuxedo-xp-xc-touchpad-key-fix')
+replaces=('tuxedo-drivers-generic'
+          'tuxedo-cc-wmi'
+          'tuxedo-keyboard'
+          'tuxedo-keyboard-dkms'
+          'tuxedo-keyboard-ite'
+          'tuxedo-touchpad-fix'
+          'tuxedo-wmi-dkms'
+          'tuxedo-xp-xc-airplane-mode-fix'
+          'tuxedo-xp-xc-touchpad-key-fix')
+install=${pkgname}.install
+source=("tuxedo-drivers-${pkgver}.tar.xz")
+sha256sums=('SKIP')
+
+build() {
+  # Building happens via DKMS at install time
+  :
+}
+
+package() {
+  local _dkmsname="tuxedo-drivers"
+  local _srcdir="${pkgdir}/usr/src/${_dkmsname}-${pkgver}"
+  
+  # Install DKMS module source
+  install -dm755 "${_srcdir}"
+  
+  # Copy source files (from the tarball which contains debian/copyright, src/, usr/)
+  if [ -d "${srcdir}/tuxedo-drivers-${pkgver}/src" ]; then
+    # If tarball contains the versioned directory
+    cp -r "${srcdir}/tuxedo-drivers-${pkgver}/src/"* "${_srcdir}/"
+  elif [ -d "${srcdir}/src" ]; then
+    # If tarball extracts directly
+    cp -r "${srcdir}/src/"* "${_srcdir}/"
+  else
+    error "Source directory not found in expected locations"
+    return 1
+  fi
+  
+  # Verify dkms.conf is present
+  if [ ! -f "${_srcdir}/dkms.conf" ]; then
+    error "dkms.conf not found in source"
+    return 1
+  fi
+  
+  # Install udev rules
+  if [ -d "${srcdir}/tuxedo-drivers-${pkgver}/usr/lib/udev/rules.d" ]; then
+    install -dm755 "${pkgdir}/usr/lib/udev/rules.d"
+    install -m644 "${srcdir}/tuxedo-drivers-${pkgver}/usr/lib/udev/rules.d/"* \
+      "${pkgdir}/usr/lib/udev/rules.d/" 2>/dev/null || true
+  elif [ -d "${srcdir}/usr/lib/udev/rules.d" ]; then
+    install -dm755 "${pkgdir}/usr/lib/udev/rules.d"
+    install -m644 "${srcdir}/usr/lib/udev/rules.d/"* \
+      "${pkgdir}/usr/lib/udev/rules.d/" 2>/dev/null || true
+  fi
+  
+  # Install udev hwdb files
+  if [ -d "${srcdir}/tuxedo-drivers-${pkgver}/usr/lib/udev/hwdb.d" ]; then
+    install -dm755 "${pkgdir}/usr/lib/udev/hwdb.d"
+    install -m644 "${srcdir}/tuxedo-drivers-${pkgver}/usr/lib/udev/hwdb.d/"* \
+      "${pkgdir}/usr/lib/udev/hwdb.d/" 2>/dev/null || true
+  elif [ -d "${srcdir}/usr/lib/udev/hwdb.d" ]; then
+    install -dm755 "${pkgdir}/usr/lib/udev/hwdb.d"
+    install -m644 "${srcdir}/usr/lib/udev/hwdb.d/"* \
+      "${pkgdir}/usr/lib/udev/hwdb.d/" 2>/dev/null || true
+  fi
+  
+  # Install modprobe.d configuration
+  if [ -d "${srcdir}/tuxedo-drivers-${pkgver}/usr/lib/modprobe.d" ]; then
+    install -dm755 "${pkgdir}/usr/lib/modprobe.d"
+    install -m644 "${srcdir}/tuxedo-drivers-${pkgver}/usr/lib/modprobe.d/"* \
+      "${pkgdir}/usr/lib/modprobe.d/" 2>/dev/null || true
+  elif [ -d "${srcdir}/usr/lib/modprobe.d" ]; then
+    install -dm755 "${pkgdir}/usr/lib/modprobe.d"
+    install -m644 "${srcdir}/usr/lib/modprobe.d/"* \
+      "${pkgdir}/usr/lib/modprobe.d/" 2>/dev/null || true
+  fi
+  
+  # Install license
+  if [ -f "${srcdir}/tuxedo-drivers-${pkgver}/debian/copyright" ]; then
+    install -Dm644 "${srcdir}/tuxedo-drivers-${pkgver}/debian/copyright" \
+      "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  elif [ -f "${srcdir}/debian/copyright" ]; then
+    install -Dm644 "${srcdir}/debian/copyright" \
+      "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  elif [ -f "${srcdir}/LICENSE" ]; then
+    install -Dm644 "${srcdir}/LICENSE" \
+      "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  fi
+}

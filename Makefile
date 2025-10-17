@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-.PHONY: all install clean package package-deb package-rpm
+.PHONY: all install clean package package-deb package-rpm package-arch package-cachyos
 
 KDIR := /lib/modules/$(shell uname -r)/build
 
@@ -43,7 +43,7 @@ clean:
 	rm -f src/dkms.conf
 	rm -f tuxedo-drivers.spec
 
-package: package-deb package-rpm
+package: package-deb package-rpm package-arch package-cachyos
 
 package-deb:
 	debuild --no-tgz-check --no-sign
@@ -67,3 +67,31 @@ package-rpm:
 		--exclude=modules.order \
 		debian/copyright src usr
 	rpmbuild -ba tuxedo-drivers.spec
+
+package-arch:
+	@echo "Preparing Arch package (using archpkg/PKGBUILD)..."
+	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' debian/tuxedo-drivers.dkms > src/dkms.conf
+	@mkdir -p archpkg
+	tar -C . -cJf archpkg/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.xz \
+		--exclude='*.cmd' --exclude='*.ko' --exclude='*.mod' --exclude='*.mod.c' \
+		--exclude='*.o' --exclude='*.o.d' --exclude='modules.order' \
+		debian/copyright src usr
+	@if [ ! -f archpkg/PKGBUILD ]; then \
+		echo "archpkg/PKGBUILD missing — create archpkg/PKGBUILD first"; \
+		exit 1; \
+	fi;
+	@cd archpkg && (makepkg -p PKGBUILD --cleanbuild -s --noconfirm || (echo "makepkg failed, retrying without dependency installation..." && makepkg -p PKGBUILD --cleanbuild --nodeps --noconfirm)) || echo "makepkg not available or failed; PKGBUILD and tarball are in archpkg/"
+
+package-cachyos:
+	@echo "Preparing CachyOS package (using archpkg/PKGBUILD.cachyos)..."
+	sed 's/#MODULE_VERSION#/$(PACKAGE_VERSION)/' debian/tuxedo-drivers.dkms > src/dkms.conf
+	@mkdir -p archpkg
+	tar -C . -cJf archpkg/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.xz \
+		--exclude='*.cmd' --exclude='*.ko' --exclude='*.mod' --exclude='*.mod.c' \
+		--exclude='*.o' --exclude='*.o.d' --exclude='modules.order' \
+		debian/copyright src usr
+	@if [ ! -f archpkg/PKGBUILD.cachyos ]; then \
+		echo "archpkg/PKGBUILD.cachyos missing"; \
+		exit 1; \
+	fi;
+	@cd archpkg && (makepkg -p PKGBUILD.cachyos --cleanbuild -s --noconfirm || (echo "makepkg failed, retrying without dependency installation..." && makepkg -p PKGBUILD.cachyos --cleanbuild --nodeps --noconfirm)) || echo "makepkg not available or failed; PKGBUILD.cachyos and tarball are in archpkg/"
