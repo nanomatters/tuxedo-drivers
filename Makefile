@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-.PHONY: all install clean package package-deb package-rpm
+.PHONY: all install clean package package-deb package-rpm package-arch
 
 KDIR := /lib/modules/$(shell uname -r)/build
 
@@ -43,7 +43,7 @@ clean:
 	rm -f src/dkms.conf
 	rm -f tuxedo-drivers.spec
 
-package: package-deb package-rpm
+package: package-deb package-rpm package-arch
 
 package-deb:
 	debuild --no-tgz-check --no-sign
@@ -67,3 +67,16 @@ package-rpm:
 		--exclude=modules.order \
 		debian/copyright src usr
 	rpmbuild -ba tuxedo-drivers.spec
+
+package-arch:
+	@echo "Preparing Arch package (using archpkg/PKGBUILD)..."
+	@mkdir -p archpkg
+	@TAR=archpkg/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.xz; \
+	if [ ! -f $$TAR ]; then \
+		tar -C . -cJf $$TAR debian/copyright src usr; \
+	fi; \
+	if [ ! -f archpkg/PKGBUILD ]; then \
+		echo "archpkg/PKGBUILD missing — create archpkg/PKGBUILD first"; \
+		exit 1; \
+	fi;
+	@cd archpkg && (makepkg -s --noconfirm || (echo "makepkg failed, retrying without dependency installation..." && makepkg --nodeps --noconfirm)) || echo "makepkg not available or failed; PKGBUILD and tarball are in archpkg/"

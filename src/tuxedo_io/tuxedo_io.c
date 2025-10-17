@@ -254,6 +254,12 @@ static void uw_id_tdp(void)
 	} else if (dmi_match(DMI_BOARD_NAME, "X5KK45xS_X5SP45xS")) {
 		tdp_min_defs = tdp_min_xxxx45xs;
 		tdp_max_defs = tdp_max_xxxx45xs;
+	} else if (dmi_match(DMI_PRODUCT_SKU, "XNE16E25")) {
+		tdp_min_defs = tdp_min_x6ar5xx;
+		tdp_max_defs = tdp_max_x6ar5xx;
+	} else if (dmi_match(DMI_PRODUCT_SKU, "XNE16A25")) {
+		tdp_min_defs = tdp_min_x6fr5xx;
+		tdp_max_defs = tdp_max_x6fr5xx;
 	} else if (dmi_match(DMI_BOARD_NAME, "X6AR55xU")) {
 		tdp_min_defs = tdp_min_x6ar55xu;
 		tdp_max_defs = tdp_max_x6ar55xu;

@@ -1,0 +1,44 @@
+pkgname=tuxedo-drivers
+pkgver=4.20.1
+pkgrel=1
+arch=('x86_64')
+license=('GPL')
+pkgdesc='tuxedo-drivers (DKMS)'
+makedepends=('dkms' 'base-devel')
+depends=('dkms')
+source=("${pkgname}-${pkgver}.tar.xz")
+sha256sums=('SKIP')
+
+build() {
+  : # build happens via DKMS at install time
+}
+
+package() {
+  # install module source for DKMS
+  install -d "$pkgdir/usr/src/${pkgname}-${pkgver}"
+  bsdtar -xf "$srcdir/${pkgname}-${pkgver}.tar.xz" -C "$pkgdir/usr/src/${pkgname}-${pkgver}"
+
+  # ensure dkms.conf exists in the source tree; if not, create a minimal one
+  if [ ! -f "$pkgdir/usr/src/${pkgname}-${pkgver}/src/dkms.conf" ] && [ ! -f "$pkgdir/usr/src/${pkgname}-${pkgver}/dkms.conf" ]; then
+    cat > "$pkgdir/usr/src/${pkgname}-${pkgver}/dkms.conf" <<'EOF'
+PACKAGE_NAME="tuxedo-drivers"
+PACKAGE_VERSION="${pkgver}"
+BUILT_MODULE_NAME[0]="tuxedo_io"
+DEST_MODULE_LOCATION[0]="/kernel/drivers"
+AUTOINSTALL="yes"
+EOF
+  fi
+
+  # register and build with DKMS if available at package time (harmlessly ignore failures)
+  if [ -x /usr/bin/dkms ]; then
+    dkms add -m ${pkgname} -v ${pkgver} --no-dep || true
+    dkms build -m ${pkgname} -v ${pkgver} || true
+    dkms install -m ${pkgname} -v ${pkgver} || true
+  fi
+
+  # install userspace files and license if present in tarball
+  if [ -d "$pkgdir/usr/src/${pkgname}-${pkgver}/usr" ]; then
+    cp -a "$pkgdir/usr/src/${pkgname}-${pkgver}/usr" "$pkgdir/"
+  fi
+  install -Dm644 "$pkgdir/usr/src/${pkgname}-${pkgver}/debian/copyright" "$pkgdir/usr/share/licenses/${pkgname}/copyright" || true
+}
