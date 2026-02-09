@@ -168,15 +168,6 @@ static int tdp_max_x6ar55xu[] = { 0x91, 0x9b, 0x122 };
 static int tdp_min_x5ar45xs[] = { 0x0a, 0x0a, 0x0a };
 static int tdp_max_x5ar45xs[] = { 0x5a, 0x5a, 0xe6 };
 
-static int tdp_min_xxxx4nax[] = { 0x0a, 0x0a, 0x0a };
-static int tdp_max_xxxx4nax[] = { 0x19, 0x23, 0x41 };
-
-static int tdp_min_xxxx4nax_15[] = { 0x0a, 0x0a, 0x0a };
-static int tdp_max_xxxx4nax_15[] = { 0x19, 0x23, 0x5a };
-
-static int tdp_min_xxar4nax[] = { 0x0a, 0x0a, 0x0a };
-static int tdp_max_xxar4nax[] = { 0x23, 0x2d, 0x5a };
-
 static int *tdp_min_defs = NULL;
 static int *tdp_max_defs = NULL;
 
@@ -269,83 +260,12 @@ static void uw_id_tdp(void)
 	} else if (dmi_match(DMI_PRODUCT_SKU, "XNE16A25")) {
 		tdp_min_defs = tdp_min_x6fr5xx;
 		tdp_max_defs = tdp_max_x6fr5xx;
-	} else if (dmi_match(DMI_PRODUCT_SKU, "XEV15AE25")) {
-		tdp_min_defs = tdp_min_xxxx4nax_15;
-		tdp_max_defs = tdp_max_xxxx4nax_15;
 	} else if (dmi_match(DMI_BOARD_NAME, "X6AR55xU")) {
 		tdp_min_defs = tdp_min_x6ar55xu;
 		tdp_max_defs = tdp_max_x6ar55xu;
 	} else if (dmi_match(DMI_BOARD_NAME, "X5AR45xS")) {
 		tdp_min_defs = tdp_min_x5ar45xs;
 		tdp_max_defs = tdp_max_x5ar45xs;
-	} else if (dmi_match(DMI_BOARD_NAME, "XxHP4NAx") ||
-		   dmi_match(DMI_BOARD_NAME, "XxKK4NAx_XxSP4NAx")) {
-		// IBP Pro Gen10 AMD: 14" and 15" share board names.
-		// Use conservative (14") TDP; 15" models with known SKUs
-		// get higher limits via SKU-specific entries above.
-		tdp_min_defs = tdp_min_xxxx4nax;
-		tdp_max_defs = tdp_max_xxxx4nax;
-	} else if (dmi_match(DMI_BOARD_NAME, "XxAR4NAx")) {
-		tdp_min_defs = tdp_min_xxar4nax;
-		tdp_max_defs = tdp_max_xxar4nax;
-	/*
-	 * Board name fallbacks for cross-brand compatibility.
-	 * Tongfang ODM sets these board names identically across all
-	 * brands (XMG, Mechrevo, PCSpecialist, etc.), so matching by
-	 * board_name catches devices that lack a TUXEDO/XMG product SKU.
-	 * These are placed after SKU-specific entries to preserve exact
-	 * TDP matching for known TUXEDO and XMG configurations.
-	 */
-	} else if (dmi_match(DMI_BOARD_NAME, "PF5LUXG")) {
-		tdp_min_defs = tdp_min_pfxluxg;
-		tdp_max_defs = tdp_max_pfxluxg;
-	} else if (dmi_match(DMI_BOARD_NAME, "GMxNGxx")) {
-		tdp_min_defs = tdp_min_gmxngxx;
-		tdp_max_defs = tdp_max_gmxngxx;
-	} else if (dmi_match(DMI_BOARD_NAME, "GMxMGxx")) {
-		tdp_min_defs = tdp_min_gmxmgxx;
-		tdp_max_defs = tdp_max_gmxmgxx;
-	} else if (dmi_match(DMI_BOARD_NAME, "GMxTGxx")) {
-		tdp_min_defs = tdp_min_gmxtgxx;
-		tdp_max_defs = tdp_max_gmxtgxx;
-	} else if (dmi_match(DMI_BOARD_NAME, "GMxZGxx")) {
-		tdp_min_defs = tdp_min_gmxzgxx;
-		tdp_max_defs = tdp_max_gmxzgxx;
-	} else if (dmi_match(DMI_BOARD_NAME, "GMxAGxx")) {
-		tdp_min_defs = tdp_min_gmxagxx;
-		tdp_max_defs = tdp_max_gmxagxx;
-	} else if (dmi_match(DMI_BOARD_NAME, "GMxRGxx")) {
-		tdp_min_defs = tdp_min_gmxrgxx;
-		tdp_max_defs = tdp_max_gmxrgxx;
-	} else if (dmi_match(DMI_BOARD_NAME, "GMxPXxx")) {
-		tdp_min_defs = tdp_min_gmxpxxx;
-		tdp_max_defs = tdp_max_gmxpxxx;
-	} else if (dmi_match(DMI_BOARD_NAME, "GMxXGxx") ||
-		   dmi_match(DMI_BOARD_NAME, "GM6XGxX")) {
-		tdp_min_defs = tdp_min_gmxxgxx;
-		tdp_max_defs = tdp_max_gmxxgxx;
-	} else if (dmi_match(DMI_BOARD_NAME, "GM6IXxB_MB1")) {
-		tdp_min_defs = tdp_min_gmxixxb_mb1;
-		tdp_max_defs = tdp_max_gmxixxb_mb1;
-	} else if (dmi_match(DMI_BOARD_NAME, "GM6IXxB_MB2")) {
-		tdp_min_defs = tdp_min_gmxixxb_mb2;
-		tdp_max_defs = tdp_max_gmxixxb_mb2;
-	} else if (dmi_match(DMI_BOARD_NAME, "GM7IXxN")) {
-		tdp_min_defs = tdp_min_gmxixxn;
-		tdp_max_defs = tdp_max_gmxixxn;
-	} else if (dmi_match(DMI_BOARD_NAME, "GM5IXxA")) {
-		tdp_min_defs = tdp_min_gmxixxa;
-		tdp_max_defs = tdp_max_gmxixxa;
-	} else if (dmi_match(DMI_BOARD_NAME, "GMxHGxx")) {
-		tdp_min_defs = tdp_min_gmxhgxa;
-		tdp_max_defs = tdp_max_gmxhgxa;
-	} else if (dmi_match(DMI_BOARD_NAME, "X6AR5xxY") ||
-		   dmi_match(DMI_BOARD_NAME, "X6AR5xxY_mLED")) {
-		tdp_min_defs = tdp_min_x6ar5xx;
-		tdp_max_defs = tdp_max_x6ar5xx;
-	} else if (dmi_match(DMI_BOARD_NAME, "X6FR5xxY")) {
-		tdp_min_defs = tdp_min_x6fr5xx;
-		tdp_max_defs = tdp_max_x6fr5xx;
 #endif
 	} else {
 		tdp_min_defs = NULL;
