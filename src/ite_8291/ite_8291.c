@@ -172,9 +172,11 @@ static void color_scaling(struct hid_device *hdev, u8 *red, u8 *green, u8 *blue,
 {
 	struct ite8291_driver_data_t *driver_data = hid_get_drvdata(hdev);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
-	if (dmi_match(DMI_PRODUCT_SKU, "STEPOL1XA04") && hdev->product == 0x600a) {
+	if ((dmi_match(DMI_PRODUCT_SKU, "STEPOL1XA04") ||
+	     dmi_match(DMI_BOARD_NAME, "GMxRGxx")) && hdev->product == 0x600a) {
 		*red = (126 * *red) / 255;
-	} else if (dmi_match(DMI_PRODUCT_SKU, "STELLARIS1XI05") && hdev->product == 0x600a) {
+	} else if ((dmi_match(DMI_PRODUCT_SKU, "STELLARIS1XI05") ||
+	            dmi_match(DMI_BOARD_NAME, "GMxPXxx")) && hdev->product == 0x600a) {
 		*red = (200 * *red) / 255;
 		*blue = (220 * *blue) / 255;
 
@@ -183,22 +185,31 @@ static void color_scaling(struct hid_device *hdev, u8 *red, u8 *green, u8 *blue,
 			*red = ( 230 * *red) / 255;
 			*blue = ( 200 * *blue) / 255;
 		}
-	} else if (dmi_match(DMI_PRODUCT_SKU, "STELLARIS1XA05")) {
+	} else if (dmi_match(DMI_PRODUCT_SKU, "STELLARIS1XA05") ||
+	           dmi_match(DMI_BOARD_NAME, "GMxXGxx") ||
+	           dmi_match(DMI_BOARD_NAME, "GM6XGxX")) {
 		*red = (128 * *red) / 255;
-	} else if (dmi_match(DMI_PRODUCT_SKU, "STELLARIS1XI05") &&
+	} else if ((dmi_match(DMI_PRODUCT_SKU, "STELLARIS1XI05") ||
+	            dmi_match(DMI_BOARD_NAME, "GMxPXxx")) &&
 		   hdev->product == 0xce00 && driver_data->bcd_device == 0x0002) {
 		*red = (255 * *red) / 255;
 		*green = (220 * *green) / 255;
 		*blue = (200 * *blue) / 255;
-	} else if (dmi_match(DMI_PRODUCT_SKU, "STELLARIS17I06") &&
+	} else if ((dmi_match(DMI_PRODUCT_SKU, "STELLARIS17I06") ||
+	            dmi_match(DMI_BOARD_NAME, "GM7IXxN")) &&
 		   hdev->product == 0xce00 && driver_data->bcd_device == 0x0002) {
 		*green = (180 * *green) / 255;
 		*blue = (180 * *blue) / 255;
-	} else if (dmi_match(DMI_PRODUCT_SKU, "STELLARIS17I06") &&
+	} else if ((dmi_match(DMI_PRODUCT_SKU, "STELLARIS17I06") ||
+	            dmi_match(DMI_BOARD_NAME, "GM7IXxN")) &&
 		   hdev->product == 0x600a) {
 		*red = (200 * *red) / 255;
 		*blue = (220 * *blue) / 255;
-	} else if ((dmi_match(DMI_PRODUCT_SKU, "STELLSL15I06") || dmi_match(DMI_PRODUCT_SKU, "STELLARIS16I06"))
+	} else if ((dmi_match(DMI_PRODUCT_SKU, "STELLSL15I06") ||
+	            dmi_match(DMI_PRODUCT_SKU, "STELLARIS16I06") ||
+	            dmi_match(DMI_BOARD_NAME, "GM5IXxA") ||
+	            dmi_match(DMI_BOARD_NAME, "GM6IXxB_MB1") ||
+	            dmi_match(DMI_BOARD_NAME, "GM6IXxB_MB2"))
 		   && hdev->product == 0x600b) {
 		// all keys: reduce pink
 		*red = (155 * *red) / 255;
@@ -219,7 +230,10 @@ static void color_scaling(struct hid_device *hdev, u8 *red, u8 *green, u8 *blue,
 		    dmi_match(DMI_PRODUCT_SKU, "STELLARIS16A07") ||
 	            dmi_match(DMI_PRODUCT_SKU, "XNE16A25") ||
 	            dmi_match(DMI_PRODUCT_SKU, "XNE16E25") ||
-		    dmi_match(DMI_BOARD_NAME, "X6AR55xU"))
+		    dmi_match(DMI_BOARD_NAME, "X6AR55xU") ||
+		    dmi_match(DMI_BOARD_NAME, "X6AR5xxY") ||
+		    dmi_match(DMI_BOARD_NAME, "X6AR5xxY_mLED") ||
+		    dmi_match(DMI_BOARD_NAME, "X6FR5xxY"))
 		   && hdev->product == 0x600b) {
 		// all keys: reduce pink
 		*red = (170 * *red) / 255;

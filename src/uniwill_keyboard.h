@@ -483,6 +483,7 @@ static int uw_lightbar_init(struct platform_device *dev)
 		|| dmi_match(DMI_BOARD_NAME, "TRINITY1501I")
 		|| dmi_match(DMI_BOARD_NAME, "TRINITY1701I")
 		|| dmi_match(DMI_PRODUCT_NAME, "A60 MUV")
+		|| dmi_match(DMI_PRODUCT_NAME, "LAPKC71F") // Intel NUC x15 (QC71 variant with lightbar)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
 		|| dmi_match(DMI_PRODUCT_SKU, "STELLARIS1XI03")
 		|| dmi_match(DMI_PRODUCT_SKU, "STELLARIS1XA03")
@@ -607,7 +608,10 @@ static int uw_has_charging_priority(bool *status)
 		|| dmi_match(DMI_BOARD_NAME, "PHxARX1_PHxAQF1") // IBP Gen7
 		|| dmi_match(DMI_BOARD_NAME, "PH6AG01_PH6AQ71_PH6AQI1")
 		|| dmi_match(DMI_BOARD_NAME, "PHxTxX1") // IBP Gen6
+		|| dmi_match(DMI_BOARD_NAME, "PHxTQx1") // IBP Gen6 (variant)
 		|| dmi_match(DMI_BOARD_NAME, "GMxXGxx") // Polaris Gen5 
+		|| dmi_match(DMI_BOARD_NAME, "GMxRGxx") // Stellaris/Polaris Gen4 AMD
+		|| dmi_match(DMI_BOARD_NAME, "GMxAGxx") // Stellaris Gen4 Intel
 		|| dmi_match(DMI_BOARD_NAME, "GMxNGxx") // Polaris Gen3 
 		|| dmi_match(DMI_BOARD_NAME, "GMxTGxx") // Stellaris/Polaris Gen3 
 		|| dmi_match(DMI_BOARD_NAME, "GMxZGxx") // Stellaris Gen3
@@ -738,6 +742,8 @@ static int uw_has_charging_profile(bool *status)
 		|| dmi_match(DMI_BOARD_NAME, "LAPQC71A")
 		|| dmi_match(DMI_BOARD_NAME, "LAPQC71B")
 		|| dmi_match(DMI_PRODUCT_NAME, "A60 MUV")
+		|| dmi_match(DMI_PRODUCT_NAME, "LAPAC71H") // Intel NUC x15 (QC71 variant)
+		|| dmi_match(DMI_PRODUCT_NAME, "LAPKC71F") // Intel NUC x15 (QC71 variant)
 	;
 
 	if (not_supported_device) {
@@ -970,7 +976,11 @@ static int is_auto_boot_and_powershare_supported(bool *status)
 		  dmi_match(DMI_BOARD_NAME, "GM5IXxA") ||
 
 		  // InfinityBook Max Gen10
-		  dmi_match(DMI_BOARD_NAME, "X5KK45xS_X5SP45xS");
+		  dmi_match(DMI_BOARD_NAME, "X5KK45xS_X5SP45xS") ||
+		  dmi_match(DMI_BOARD_NAME, "X6HP45xU") ||
+		  dmi_match(DMI_BOARD_NAME, "X6KK45xU_X6SP45xU") ||
+		  dmi_match(DMI_BOARD_NAME, "X6AR55xU") ||
+		  dmi_match(DMI_BOARD_NAME, "X5AR45xS");
 
 	return 0;
 }
